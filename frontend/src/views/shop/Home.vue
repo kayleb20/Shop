@@ -13,10 +13,11 @@
       <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-72 h-72 bg-yellow-300 opacity-10 rounded-full blur-3xl"></div>
 
       <div class="relative max-w-4xl mx-auto text-center z-10">
-        <h1 class="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-sm text-white">
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-white">
           {{ $t('shop.bannerTitle') }}
         </h1>
-        <p class="text-xl md:text-2xl text-white/90 font-light max-w-2xl mx-auto leading-relaxed">
+        <br>
+        <p class="text-xl md:text-2xl text-white font-medium max-w-2xl mx-auto">
           {{ $t('shop.bannerSubtitle') }}
         </p>
       </div>
