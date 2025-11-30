@@ -6,7 +6,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2+-6DB33F?style=flat-square&logo=spring-boot&logoColor=white)
 ![Java](https://img.shields.io/badge/Java-17+-007396?style=flat-square&logo=openjdk&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=flat-square)
+[![Build CI](https://github.com/jellyfaith/Shop/actions/workflows/build.yml/badge.svg)](https://github.com/jellyfaith/Shop/actions/workflows/build.yml)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-pink?style=flat-square)
 
 **一个基于 Spring Boot 3 和 Vue 3 构建的现代化全栈电商平台。**
@@ -154,7 +154,7 @@ npm install
 # 启动开发服务器
 npm run dev
 ```
-前端页面将在 `http://localhost:5173` (默认) 启动。
+前端页面将在 `http://localhost:3000` (默认) 启动。
 
 ### 4. 打包构建 (Build)
 
