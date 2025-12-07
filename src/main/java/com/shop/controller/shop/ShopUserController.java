@@ -55,9 +55,17 @@ public class ShopUserController {
     @GetMapping("/info")
     @Operation(summary = "获取当前用户信息")
     public Result<User> info(HttpServletRequest request) {
-        // Assuming JwtInterceptor puts "username" or "userId" in request attribute
-        // For now, we might need to fetch by username from service
-        // This is a placeholder implementation
-        return Result.success(); 
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
+            return Result.error("未登录");
+        }
+        
+        // Fetch user from service
+        User user = userService.lambdaQuery().eq(User::getUsername, username).one();
+        if (user != null) {
+            user.setPassword(null); // Don't return password
+            return Result.success(user);
+        }
+        return Result.error("用户不存在");
     }
 }

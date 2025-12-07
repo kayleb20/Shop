@@ -108,13 +108,32 @@
           </div>
 
           <!-- 登录入口：Element Plus 按钮，强制覆盖背景色为主题色 -->
-          <div class="ml-3 relative">
+          <div class="ml-3 relative" v-if="!user">
              <el-button type="primary" 
              round 
              class="!bg-[var(--el-color-primary)] !border-[var(--el-color-primary)] hover:opacity-90 !font-medium !px-6 !w-24" 
              @click="$router.push('/shop/login')">
              {{ $t('common.login') }}
             </el-button>
+          </div>
+
+          <!-- User Dropdown -->
+          <div class="ml-3 relative" v-else>
+            <el-dropdown trigger="click">
+              <div class="flex items-center cursor-pointer text-gray-700 dark:text-gray-200 hover:text-[var(--el-color-primary)]">
+                <el-avatar :size="32" class="mr-2 bg-[var(--el-color-primary)]">{{ user.username.charAt(0).toUpperCase() }}</el-avatar>
+                <span class="font-medium">{{ user.username }}</span>
+                <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+              </div>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="$router.push('/shop/orders')">{{ $t('shop.myOrders') }}</el-dropdown-item>
+                  <el-dropdown-item divided @click="logout">
+                    <span class="text-red-500">{{ $t('common.logout') }}</span>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </div>
         </div> 
       </div>
@@ -126,11 +145,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Moon, Sunny, ArrowDown } from '@element-plus/icons-vue'
 import { useThemeStore } from '../stores/theme'
 import { useLocaleStore } from '../stores/locale'
 import SettingsModal from './SettingsModal.vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+
+const router = useRouter()
+const user = ref(null)
 
 // 引入状态管理 Store
 const themeStore = useThemeStore()
@@ -153,4 +178,34 @@ const currentFlag = computed(() => {
 const openSettings = () => {
   showSettings.value = true
 }
+
+const fetchUserInfo = async () => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    try {
+      const res = await axios.get('/api/shop/user/info', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.data.code === 200) {
+        user.value = res.data.data
+      } else {
+        localStorage.removeItem('token')
+      }
+    } catch (e) {
+      console.error(e)
+      localStorage.removeItem('token')
+    }
+  }
+}
+
+const logout = () => {
+  localStorage.removeItem('token')
+  user.value = null
+  ElMessage.success('Logged out')
+  router.push('/shop/login')
+}
+
+onMounted(() => {
+  fetchUserInfo()
+})
 </script>

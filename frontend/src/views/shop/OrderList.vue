@@ -6,7 +6,7 @@
       <div v-for="order in orders" :key="order.orderNo" class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-md transition-shadow">
         <div class="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
           <div>
-            <span class="text-sm text-gray-500 dark:text-gray-400">Order No: </span>
+            <span class="text-sm text-gray-500 dark:text-gray-400">{{ $t('shop.orderNo') }} </span>
             <span class="font-mono font-medium text-gray-900 dark:text-white">{{ order.orderNo }}</span>
           </div>
           <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -26,12 +26,12 @@
 
         <div class="flex justify-between items-center mt-4 pt-2 border-t border-gray-100 dark:border-gray-700">
           <div class="flex items-center gap-4">
-            <span class="font-bold text-lg text-gray-900 dark:text-white">Total: ¥{{ order.totalAmount }}</span>
+            <span class="font-bold text-lg text-gray-900 dark:text-white">{{ $t('shop.total') }} ¥{{ order.totalAmount }}</span>
             <el-tag :type="getStatusType(order.status)">{{ getStatusText(order.status) }}</el-tag>
           </div>
           <div class="flex gap-2">
-            <el-button v-if="order.status === 0" type="primary" size="small" @click="pay(order.orderNo)">Pay Now</el-button>
-            <el-button size="small" @click="$router.push(`/shop/order/${order.orderNo}`)">Details</el-button>
+            <el-button v-if="order.status === 0" type="primary" size="small" @click="pay(order.orderNo)">{{ $t('shop.payNow') }}</el-button>
+            <el-button size="small" @click="$router.push(`/shop/order/${order.orderNo}`)">{{ $t('shop.details') }}</el-button>
           </div>
         </div>
       </div>
@@ -45,7 +45,9 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const orders = ref([])
 
 const fetchOrders = async () => {
@@ -70,18 +72,17 @@ const pay = async (orderNo) => {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (res.data.code === 200) {
-      ElMessage.success('Payment Successful')
+      ElMessage.success(t('shop.paymentSuccess'))
       fetchOrders()
     }
   } catch (e) {
     console.error(e)
-    ElMessage.error('Payment Failed')
+    ElMessage.error(t('shop.paymentFailed'))
   }
 }
 
 const getStatusText = (status) => {
-  const map = { 0: 'Unpaid', 1: 'Paid', 2: 'Shipped', 3: 'Completed', 4: 'Cancelled' }
-  return map[status] || 'Unknown'
+  return t(`shop.orderStatus.${status}`)
 }
 
 const getStatusType = (status) => {

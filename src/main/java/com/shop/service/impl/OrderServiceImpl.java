@@ -8,6 +8,8 @@ import com.shop.entity.Product;
 import com.shop.entity.User;
 import com.shop.repository.OrderDetailMapper;
 import com.shop.repository.OrderMasterMapper;
+import com.shop.entity.ProductSku;
+import com.shop.repository.ProductSkuMapper;
 import com.shop.repository.UserMapper;
 import com.shop.service.CartService;
 import com.shop.service.OrderService;
@@ -36,6 +38,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductSkuMapper productSkuMapper;
 
     @Autowired
     private OrderMasterMapper orderMasterMapper;
@@ -69,8 +74,6 @@ public class OrderServiceImpl implements OrderService {
         orderMaster.setUserId(user.getId());
         orderMaster.setTotalAmount(cartVO.getTotalPrice());
         orderMaster.setStatus(0); // New Order
-        // Note: OrderMaster entity might need fields for receiver info if not present, 
-        // or we assume it's stored elsewhere. For now, we proceed with existing fields.
         orderMasterMapper.insert(orderMaster);
 
         // 4. Create Order Details & Deduct Stock
@@ -78,20 +81,28 @@ public class OrderServiceImpl implements OrderService {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrderId(orderMaster.getId());
             orderDetail.setProductId(item.getProductId());
+            orderDetail.setSkuId(item.getSkuId());
             orderDetail.setProductName(item.getProductName());
+            orderDetail.setSpecs(item.getSpecs());
             orderDetail.setProductPrice(item.getPrice());
             orderDetail.setQuantity(item.getQuantity());
             orderDetailMapper.insert(orderDetail);
 
-            // Deduct Stock (Simple implementation, not handling concurrency perfectly here)
-            Product product = productService.getById(item.getProductId());
-            // Assuming Product has a stock field, if not, we skip. 
-            // If needed, add stock field to Product entity.
+            // Deduct Stock from SKU
+            ProductSku sku = productSkuMapper.selectById(item.getSkuId());
+            if (sku == null) {
+                throw new RuntimeException("Product SKU not found: " + item.getSkuId());
+            }
+            if (sku.getStock() < item.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for SKU: " + item.getSkuId());
+            }
+            sku.setStock(sku.getStock() - item.getQuantity());
+            productSkuMapper.updateById(sku);
         }
 
         // 5. Clear Cart
         for (CartItemVO item : cartVO.getItems()) {
-            cartService.delete(username, item.getProductId());
+            cartService.delete(username, item.getSkuId());
         }
 
         return orderMaster.getOrderNo();

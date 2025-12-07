@@ -95,8 +95,8 @@
     <!-- 底部按钮区域 -->
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="handleClose">Cancel</el-button>
-        <el-button type="primary" @click="saveSettings">Save Changes</el-button>
+        <el-button @click="handleClose">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="saveSettings">{{ $t('common.save') }}</el-button>
       </span>
     </template>
   </el-dialog>

@@ -1,25 +1,39 @@
 <template>
   <div class="login-container bg-white dark:bg-gray-900 transition-colors duration-300">
-    <div class="login-box dark:bg-gray-800">
+    <div class="login-box dark:bg-gray-800 relative">
+      <!-- Error Alert -->
+      <transition name="el-fade-in-linear">
+        <el-alert
+          v-if="errorMessage"
+          :title="errorMessage"
+          type="error"
+          show-icon
+          :closable="true"
+          @close="errorMessage = ''"
+          class="mb-6 !rounded-lg"
+          effect="dark"
+        />
+      </transition>
+
       <h2 class="dark:text-white">{{ isRegister ? $t('common.register') : $t('common.login') }}</h2>
       <el-form :model="form" label-width="0">
         <el-form-item>
-          <el-input v-model="form.username" :placeholder="$t('common.username')" prefix-icon="User" />
+          <el-input v-model="form.username" :placeholder="$t('common.username')" prefix-icon="User" size="large" />
         </el-form-item>
         <el-form-item>
-          <el-input v-model="form.password" type="password" :placeholder="$t('common.password')" prefix-icon="Lock" />
+          <el-input v-model="form.password" type="password" :placeholder="$t('common.password')" prefix-icon="Lock" size="large" show-password />
         </el-form-item>
         <!-- Confirm Password for Register -->
         <el-form-item v-if="isRegister">
-          <el-input v-model="form.confirmPassword" type="password" :placeholder="$t('common.confirmPassword')" prefix-icon="Lock" />
+          <el-input v-model="form.confirmPassword" type="password" :placeholder="$t('common.confirmPassword')" prefix-icon="Lock" size="large" show-password />
         </el-form-item>
         
-        <el-button type="primary" class="login-btn" @click="handleSubmit" :loading="loading">
+        <el-button type="primary" class="login-btn" @click="handleSubmit" :loading="loading" size="large">
           {{ isRegister ? $t('common.register') : $t('common.login') }}
         </el-button>
         
         <div class="links">
-          <a href="#" @click.prevent="toggleMode">
+          <a href="#" @click.prevent="toggleMode" class="hover:text-blue-500 transition-colors">
             {{ isRegister ? $t('common.hasAccount') : $t('common.noAccount') }}
           </a>
         </div>
@@ -29,19 +43,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 const loading = ref(false)
 const isRegister = ref(false)
+const errorMessage = ref('')
 const form = ref({
   username: '',
   password: '',
   confirmPassword: ''
+})
+
+// Clear error message when switching modes
+watch(isRegister, () => {
+  errorMessage.value = ''
 })
 
 const toggleMode = () => {
@@ -50,16 +72,34 @@ const toggleMode = () => {
 }
 
 const handleSubmit = async () => {
+  errorMessage.value = '' // Clear previous errors
+  
   if (!form.value.username || !form.value.password) {
-    ElMessage.warning('Please fill in all fields')
+    errorMessage.value = t('common.fillAllFields')
     return
   }
 
   if (isRegister.value) {
     if (form.value.password !== form.value.confirmPassword) {
-      ElMessage.warning('Passwords do not match')
+      errorMessage.value = t('common.passwordMismatch')
       return
     }
+    // Password validation: 8-20 chars, at least 2 types
+    const password = form.value.password
+    if (password.length < 8 || password.length > 20) {
+      errorMessage.value = t('common.passwordLength')
+      return
+    }
+    let types = 0
+    if (/[a-zA-Z]/.test(password)) types++
+    if (/\d/.test(password)) types++
+    if (/[^a-zA-Z0-9]/.test(password)) types++
+    
+    if (types < 2) {
+      errorMessage.value = t('common.passwordComplexity')
+      return
+    }
+
     await register()
   } else {
     await login()
@@ -75,14 +115,16 @@ const login = async () => {
     })
     if (res.data.code === 200) {
       localStorage.setItem('token', res.data.data)
-      ElMessage.success('Login successful')
-      router.push('/shop/home')
+      ElMessage.success(t('common.loginSuccess'))
+      // Check if there is a redirect query param
+      const redirect = router.currentRoute.value.query.redirect || '/shop/home'
+      router.push(redirect)
     } else {
-      ElMessage.error(res.data.message)
+      errorMessage.value = res.data.message || t('common.loginFailed')
     }
   } catch (e) {
     console.error(e)
-    ElMessage.error('Login failed')
+    errorMessage.value = t('common.networkError')
   } finally {
     loading.value = false
   }
@@ -96,14 +138,19 @@ const register = async () => {
       password: form.value.password
     })
     if (res.data.code === 200) {
-      ElMessage.success('Registration successful, please login')
+      ElMessage.success(t('common.registerSuccess'))
+      // Switch to login mode
       isRegister.value = false
+      // Clear password fields but keep username for convenience
+      form.value.password = ''
+      form.value.confirmPassword = ''
     } else {
-      ElMessage.error(res.data.message)
+      // Show specific error message from backend (e.g., "Username already exists")
+      errorMessage.value = res.data.message || t('common.registerFailed')
     }
   } catch (e) {
     console.error(e)
-    ElMessage.error('Registration failed')
+    errorMessage.value = e.response?.data?.message || t('common.registerRetry')
   } finally {
     loading.value = false
   }

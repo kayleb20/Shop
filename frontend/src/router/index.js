@@ -36,17 +36,20 @@ const routes = [
       {
         // 购物车页面：/shop/cart
         path: 'cart',
-        component: () => import('../views/shop/Cart.vue')
+        component: () => import('../views/shop/Cart.vue'),
+        meta: { requiresAuth: true }
       },
       {
         // 订单列表页：/shop/orders
         path: 'orders',
-        component: () => import('../views/shop/OrderList.vue')
+        component: () => import('../views/shop/OrderList.vue'),
+        meta: { requiresAuth: true }
       },
       {
         // 订单详情页：/shop/order/:orderNo
         path: 'order/:orderNo',
-        component: () => import('../views/shop/OrderDetail.vue')
+        component: () => import('../views/shop/OrderDetail.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   },
@@ -104,8 +107,11 @@ router.beforeEach((to, from, next) => {
     if (to.path.startsWith('/backend')) {
       next('/backend/login')
     } else {
-      // 否则重定向到商城登录页
-      next('/shop/login')
+      // 否则重定向到商城登录页，并携带 redirect 参数以便登录后跳转回来
+      next({
+        path: '/shop/login',
+        query: { redirect: to.fullPath }
+      })
     }
   } else {
     // 不需要认证，或者已登录，直接放行

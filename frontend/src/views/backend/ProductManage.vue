@@ -6,7 +6,7 @@
     </div>
     
     <el-table :data="tableData" style="width: 100%" v-loading="loading" class="dark:bg-gray-800">
-      <el-table-column prop="id" label="ID" width="80" />
+      <el-table-column prop="id" :label="$t('admin.id')" width="80" />
       <el-table-column prop="name" :label="$t('admin.productName')" />
       <el-table-column prop="price" :label="$t('admin.price')" width="120">
         <template #default="scope">
@@ -16,7 +16,7 @@
       <el-table-column prop="status" :label="$t('admin.status')" width="100">
         <template #default="scope">
           <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
-            {{ scope.row.status === 1 ? 'Active' : 'Inactive' }}
+            {{ scope.row.status === 1 ? $t('admin.active') : $t('admin.inactive') }}
           </el-tag>
         </template>
       </el-table-column>

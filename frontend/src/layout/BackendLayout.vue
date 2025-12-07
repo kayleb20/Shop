@@ -36,7 +36,7 @@
           </el-dropdown>
           <el-dropdown>
             <span class="el-dropdown-link">
-              Admin <el-icon class="el-icon--right"><arrow-down /></el-icon>
+              {{ $t('admin.adminUser') }} <el-icon class="el-icon--right"><arrow-down /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>

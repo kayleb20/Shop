@@ -20,9 +20,9 @@
       
       <div class="mt-8 flex justify-end items-center gap-6">
         <div class="text-xl text-gray-900 dark:text-white">
-          Total: <span class="font-bold text-red-500 text-2xl">¥{{ totalPrice }}</span>
+          {{ $t('shop.total') }} <span class="font-bold text-red-500 text-2xl">¥{{ totalPrice }}</span>
         </div>
-        <el-button type="primary" size="large" @click="checkout">Checkout</el-button>
+        <el-button type="primary" size="large" @click="checkout">{{ $t('shop.checkout') }}</el-button>
       </div>
     </div>
 
@@ -36,7 +36,9 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { Delete } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 const cartItems = ref([])
 const totalPrice = ref(0)
@@ -78,7 +80,7 @@ const removeItem = async (productId) => {
     await axios.delete(`/api/shop/cart/${productId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-    ElMessage.success('Removed')
+    ElMessage.success(t('shop.removed'))
     fetchCart()
   } catch (e) {
     console.error(e)

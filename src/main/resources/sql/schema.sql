@@ -30,32 +30,50 @@ CREATE TABLE IF NOT EXISTS `product_category` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品分类表';
 
--- 3. 商品表
-CREATE TABLE IF NOT EXISTS `product` (
+-- 3. 商品表 (SPU)
+DROP TABLE IF EXISTS `product`;
+CREATE TABLE `product` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `category_id` BIGINT NOT NULL COMMENT '分类ID',
     `name` VARCHAR(100) NOT NULL COMMENT '商品名称',
     `description` TEXT COMMENT '商品描述',
-    `price` DECIMAL(10, 2) NOT NULL COMMENT '价格',
-    `image` VARCHAR(255) DEFAULT NULL COMMENT '图片地址',
+    `main_image` VARCHAR(255) COMMENT '商品主图',
+    `min_price` DECIMAL(10, 2) COMMENT '最低展示价',
     `status` TINYINT(1) DEFAULT 1 COMMENT '状态 1-上架 0-下架',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted` TINYINT(1) DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
     KEY `idx_category_id` (`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品表(SPU)';
 
--- 4. 库存表
-CREATE TABLE IF NOT EXISTS `product_stock` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `product_id` BIGINT NOT NULL COMMENT '商品ID',
-    `stock` INT NOT NULL DEFAULT 0 COMMENT '库存数量',
+-- 4. 商品规格表 (SKU)
+DROP TABLE IF EXISTS `product_sku`;
+CREATE TABLE `product_sku` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'SKU ID',
+    `product_id` BIGINT NOT NULL COMMENT '关联的主商品ID',
+    `specs` JSON DEFAULT NULL COMMENT '规格参数',
+    `price` DECIMAL(10, 2) NOT NULL COMMENT '该规格的价格',
+    `stock` INT NOT NULL DEFAULT 0 COMMENT '该规格的库存',
+    `image` VARCHAR(255) DEFAULT NULL COMMENT '该规格的专属图片',
+    `sku_code` VARCHAR(64) COMMENT '商家编码',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT(1) DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_product_id` (`product_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品库存表';
+    KEY `idx_product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品规格(SKU)表';
+
+-- 5. 库存表 (已废弃，库存移入 SKU 表)
+-- CREATE TABLE IF NOT EXISTS `product_stock` (
+#     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+#     `product_id` BIGINT NOT NULL COMMENT '商品ID',
+#     `stock` INT NOT NULL DEFAULT 0 COMMENT '库存数量',
+#     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+#     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+#     PRIMARY KEY (`id`),
+#     UNIQUE KEY `uk_product_id` (`product_id`)
+# ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品库存表';
 
 -- 5. 购物车项表 (也可以用Redis实现，这里保留表结构备用)
 CREATE TABLE IF NOT EXISTS `cart_item` (
@@ -92,7 +110,9 @@ CREATE TABLE IF NOT EXISTS `order_detail` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `order_id` BIGINT NOT NULL COMMENT '订单ID',
     `product_id` BIGINT NOT NULL COMMENT '商品ID',
+    `sku_id` BIGINT NOT NULL COMMENT 'SKU ID',
     `product_name` VARCHAR(100) NOT NULL COMMENT '商品名称快照',
+    `specs` JSON DEFAULT NULL COMMENT '规格快照',
     `product_price` DECIMAL(10, 2) NOT NULL COMMENT '商品价格快照',
     `quantity` INT NOT NULL COMMENT '购买数量',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -125,4 +145,4 @@ CREATE TABLE IF NOT EXISTS `sales_report` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='销售统计表';
 
 -- 初始化管理员
-INSERT INTO `admin_user` (`username`, `password`) VALUES ('admin', '123456');
+-- INSERT INTO `admin_user` (`username`, `password`) VALUES ('admin', '123456');

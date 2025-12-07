@@ -54,8 +54,8 @@
             effect="dark"
           >
             <el-option :label="$t('shop.all')" value="" />
-            <el-option label="Electronics" value="1" />
-            <el-option label="Clothing" value="2" />
+            <el-option :label="$t('shop.electronics')" value="1" />
+            <el-option :label="$t('shop.clothing')" value="2" />
           </el-select>
         </div>
 
@@ -98,19 +98,25 @@
           <!-- 商品图：进入 hover 时显示加入购物车按钮 -->
           <div class="relative h-64 overflow-hidden bg-gray-100 dark:bg-gray-700">
             <img 
-              :src="product.image" 
+              :src="product.mainImage" 
               :alt="product.name" 
               loading="lazy" 
               class="w-full h-full object-cover object-center transform group-hover:scale-110 transition-transform duration-500"
             />
             <!-- Overlay Action -->
-            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <div v-if="product.status === 1" class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
               <button 
                 @click.stop="addToCart(product)"
                 class="bg-white text-gray-900 px-6 py-2 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:bg-gray-50"
               >
                 {{ $t('shop.addToCart') }}
               </button>
+            </div>
+            <!-- Out of Stock Overlay -->
+            <div v-else class="absolute inset-0 bg-gray-900/50 flex items-center justify-center backdrop-blur-[2px]">
+              <span class="text-white font-bold text-lg tracking-wider border-2 border-white px-4 py-1 rounded-md transform -rotate-12">
+                {{ $t('shop.outOfStock') }}
+              </span>
             </div>
           </div>
 
@@ -132,7 +138,7 @@
             </p>
             <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
               <p class="text-xl font-bold text-gray-900 dark:text-white">
-                ¥{{ product.price }}
+                ¥{{ product.minPrice }} {{ $t('shop.startingFrom') }}
               </p>
               <div class="flex text-yellow-400 text-sm">
                 ★★★★☆ <span class="text-gray-400 ml-1">(4.5)</span>

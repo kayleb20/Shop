@@ -3,7 +3,7 @@
     <div class="login-card">
       <div class="header">
         <h1>{{ $t('admin.title') }}</h1>
-        <p>Secure Access</p>
+        <p>{{ $t('admin.secureAccess') }}</p>
       </div>
       <el-form :model="form" size="large">
         <el-form-item>

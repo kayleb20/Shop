@@ -9,7 +9,7 @@
             </div>
           </template>
           <div class="card-value">¥ 128,000</div>
-          <div class="card-trend up">+12% vs last month</div>
+          <div class="card-trend up">+12% {{ $t('admin.vsLastMonth') }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
@@ -20,29 +20,29 @@
             </div>
           </template>
           <div class="card-value">1,240</div>
-          <div class="card-trend up">+5% vs last month</div>
+          <div class="card-trend up">+5% {{ $t('admin.vsLastMonth') }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card class="stat-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>New Users</span>
+              <span>{{ $t('admin.newUsers') }}</span>
             </div>
           </template>
           <div class="card-value">350</div>
-          <div class="card-trend down">-2% vs last month</div>
+          <div class="card-trend down">-2% {{ $t('admin.vsLastMonth') }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card class="stat-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>Pending Orders</span>
+              <span>{{ $t('admin.pendingOrders') }}</span>
             </div>
           </template>
           <div class="card-value">12</div>
-          <div class="card-trend">Action needed</div>
+          <div class="card-trend">{{ $t('admin.actionNeeded') }}</div>
         </el-card>
       </el-col>
     </el-row>
@@ -52,11 +52,11 @@
         <el-card shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>Sales Overview</span>
+              <span>{{ $t('admin.salesOverview') }}</span>
             </div>
           </template>
           <div class="h-[300px] bg-[#f0f2f5] dark:bg-gray-700 flex items-center justify-center text-gray-400">
-            Chart Placeholder (Integrate ECharts here)
+            {{ $t('admin.chartPlaceholder') }}
           </div>
         </el-card>
       </el-col>
@@ -64,7 +64,7 @@
         <el-card shadow="hover">
           <template #header>
             <div class="card-header">
-              <span>Recent Activity</span>
+              <span>{{ $t('admin.recentActivity') }}</span>
             </div>
           </template>
           <el-timeline>

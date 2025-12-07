@@ -14,7 +14,9 @@ public class OrderDetail {
 
     private Long orderId;
     private Long productId;
+    private Long skuId; // Added SKU ID
     private String productName;
+    private String specs; // Added Specs snapshot
     private BigDecimal productPrice;
     private Integer quantity;
 

@@ -5,12 +5,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.shop.entity.Product;
 import com.shop.service.ProductService;
 import com.shop.utils.Result;
+import com.shop.entity.ProductSku;
+import com.shop.repository.ProductSkuMapper;
+import com.shop.vo.ProductDetailVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 商城商品浏览接口
@@ -22,6 +26,9 @@ public class ShopProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductSkuMapper productSkuMapper;
 
     /**
      * 搜索商品列表
@@ -44,7 +51,7 @@ public class ShopProductController {
                                       @RequestParam(required = false) BigDecimal maxPrice) {
         Page<Product> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Product::getStatus, 1); // Only active products
+        // wrapper.eq(Product::getStatus, 1); // Allow all products, frontend handles status display
         
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.like(Product::getName, keyword);
@@ -53,10 +60,10 @@ public class ShopProductController {
             wrapper.eq(Product::getCategoryId, categoryId);
         }
         if (minPrice != null) {
-            wrapper.ge(Product::getPrice, minPrice);
+            wrapper.ge(Product::getMinPrice, minPrice);
         }
         if (maxPrice != null) {
-            wrapper.le(Product::getPrice, maxPrice);
+            wrapper.le(Product::getMinPrice, maxPrice);
         }
         
         wrapper.orderByDesc(Product::getCreateTime);
@@ -67,11 +74,25 @@ public class ShopProductController {
      * 获取商品详情
      *
      * @param id 商品ID
-     * @return 商品详情
+     * @return 商品详情（包含SKU列表）
      */
     @GetMapping("/{id}")
     @Operation(summary = "商品详情")
-    public Result<Product> detail(@PathVariable Long id) {
-        return Result.success(productService.getById(id));
+    public Result<ProductDetailVO> detail(@PathVariable Long id) {
+        Product product = productService.getById(id);
+        if (product == null) {
+            return Result.error("商品不存在");
+        }
+        
+        LambdaQueryWrapper<ProductSku> skuWrapper = new LambdaQueryWrapper<>();
+        skuWrapper.eq(ProductSku::getProductId, id);
+        skuWrapper.eq(ProductSku::getDeleted, 0);
+        List<ProductSku> skus = productSkuMapper.selectList(skuWrapper);
+        
+        ProductDetailVO vo = new ProductDetailVO();
+        vo.setProduct(product);
+        vo.setSkus(skus);
+        
+        return Result.success(vo);
     }
 }

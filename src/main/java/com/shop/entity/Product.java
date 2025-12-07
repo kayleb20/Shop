@@ -15,8 +15,8 @@ public class Product {
     private Long categoryId;
     private String name;
     private String description;
-    private BigDecimal price;
-    private String image;
+    private String mainImage;
+    private BigDecimal minPrice;
     private Integer status; // 1-上架 0-下架
 
     @TableField(fill = FieldFill.INSERT)
