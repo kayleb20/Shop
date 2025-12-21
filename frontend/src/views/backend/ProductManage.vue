@@ -1,51 +1,217 @@
 <template>
-  <div class="product-manage bg-white dark:bg-gray-800">
-    <div class="header">
-      <h2 class="text-gray-900 dark:text-white">{{ $t('admin.productManage') }}</h2>
-      <el-button type="primary">{{ $t('admin.addProduct') }}</el-button>
-    </div>
-    
-    <el-table :data="tableData" style="width: 100%" v-loading="loading" class="dark:bg-gray-800">
-      <el-table-column prop="id" :label="$t('admin.id')" width="80" />
-      <el-table-column prop="name" :label="$t('admin.productName')" />
-      <el-table-column prop="price" :label="$t('admin.price')" width="120">
-        <template #default="scope">
-          ¥{{ scope.row.price }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="status" :label="$t('admin.status')" width="100">
-        <template #default="scope">
-          <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
-            {{ scope.row.status === 1 ? $t('admin.active') : $t('admin.inactive') }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('admin.operations')" width="180">
-        <template #default>
-          <el-button link type="primary" size="small">{{ $t('admin.edit') }}</el-button>
-          <el-button link type="danger" size="small">{{ $t('admin.delete') }}</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+  <div class="product-manage p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
+    <el-tabs v-model="activeTab" class="demo-tabs">
+      <el-tab-pane :label="$t('admin.productManage')" name="product">
+        <div class="header flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white hidden md:block">{{ $t('admin.productManage') }}</h2>
+          <div class="flex gap-2 w-full md:w-auto justify-end">
+            <el-button type="primary" @click="handleAdd">{{ $t('admin.addProduct') }}</el-button>
+          </div>
+        </div>
 
-    <div class="pagination">
-      <el-pagination background layout="prev, pager, next" :total="total" />
-    </div>
+        <!-- Filters -->
+        <div class="filters mb-6 flex flex-wrap gap-4">
+          <el-input
+            v-model="searchName"
+            :placeholder="$t('admin.productName')"
+            class="w-48"
+            clearable
+            @clear="fetchData"
+            @keyup.enter="fetchData"
+          />
+          <el-select v-model="searchCategory" :placeholder="$t('shop.category')" clearable @change="fetchData" class="w-48">
+            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+          </el-select>
+          <el-select v-model="sortField" :placeholder="$t('admin.sortBy')" @change="fetchData" class="w-40">
+            <el-option :label="$t('admin.newest')" value="createTime" />
+            <el-option :label="$t('admin.price')" value="price" />
+          </el-select>
+          <el-select v-model="sortOrder" :placeholder="$t('admin.sortOrder')" @change="fetchData" class="w-32">
+            <el-option :label="$t('admin.desc')" value="desc" />
+            <el-option :label="$t('admin.asc')" value="asc" />
+          </el-select>
+          <el-button type="primary" @click="fetchData">{{ $t('shop.search') }}</el-button>
+        </div>
+        
+        <el-table :data="tableData" style="width: 100%" v-loading="loading" class="dark:bg-gray-800">
+          <el-table-column prop="id" :label="$t('admin.id')" width="80" />
+          <el-table-column prop="name" :label="$t('admin.productName')" />
+          <el-table-column prop="minPrice" :label="$t('admin.price')" width="120">
+            <template #default="scope">
+              ¥{{ scope.row.minPrice }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="categoryId" :label="$t('shop.category')" width="120">
+            <template #default="scope">
+              {{ getCategoryName(scope.row.categoryId) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" :label="$t('admin.status')" width="100">
+            <template #default="scope">
+              <el-switch
+                v-model="scope.row.status"
+                :active-value="1"
+                :inactive-value="0"
+                @change="handleStatusChange(scope.row)"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('admin.operations')" width="250">
+            <template #default="scope">
+              <el-button link type="primary" size="small" @click="handleEdit(scope.row)">{{ $t('admin.edit') }}</el-button>
+              <el-button link type="success" size="small" @click="handleStock(scope.row)">{{ $t('admin.stock') }}</el-button>
+              <el-button link type="danger" size="small" @click="handleDelete(scope.row)">{{ $t('admin.delete') }}</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination mt-4 flex justify-end">
+          <el-pagination 
+            background 
+            layout="prev, pager, next" 
+            :total="total" 
+            @current-change="handlePageChange"
+          />
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane :label="$t('admin.categoryManage')" name="category">
+        <CategoryManage />
+      </el-tab-pane>
+    </el-tabs>
+
+    <!-- Add/Edit Dialog -->
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="50%">
+      <el-form :model="form" label-width="100px">
+        <el-form-item :label="$t('admin.productName')">
+          <el-input v-model="form.name" />
+        </el-form-item>
+        <el-form-item :label="$t('shop.category')">
+          <el-select v-model="form.categoryId" placeholder="Select">
+            <el-option
+              v-for="item in categories"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('shop.description')">
+          <el-input v-model="form.description" type="textarea" />
+        </el-form-item>
+        <el-form-item :label="$t('admin.price')">
+          <el-input-number v-model="form.minPrice" :min="0" :precision="2" />
+        </el-form-item>
+        <el-form-item :label="$t('admin.image')">
+          <el-input v-model="form.mainImage" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">{{ $t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ $t('common.save') }}</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- Stock Dialog -->
+    <el-dialog v-model="stockDialogVisible" :title="$t('admin.manageStock')" width="60%">
+      <el-table :data="skuList" style="width: 100%">
+        <el-table-column prop="id" :label="$t('admin.id')" width="60" />
+        <el-table-column prop="specs" :label="$t('admin.specs')">
+            <template #default="scope">
+                {{ scope.row.specs }}
+            </template>
+        </el-table-column>
+        <el-table-column prop="price" :label="$t('admin.price')">
+             <template #default="scope">
+                <el-input-number v-model="scope.row.price" size="small" :min="0" :precision="2" />
+            </template>
+        </el-table-column>
+        <el-table-column prop="stock" :label="$t('admin.stock')">
+            <template #default="scope">
+                <el-input-number v-model="scope.row.stock" size="small" :min="0" />
+            </template>
+        </el-table-column>
+        <el-table-column :label="$t('admin.operations')">
+            <template #default="scope">
+                <el-button type="primary" size="small" @click="saveSku(scope.row)">{{ $t('common.save') }}</el-button>
+            </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, computed } from 'vue'
+import request from '@/utils/request'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+import CategoryManage from './CategoryManage.vue'
 
+const { t } = useI18n()
+const activeTab = ref('product')
 const tableData = ref([])
 const loading = ref(false)
 const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const categories = ref([])
 
-const fetchProducts = async () => {
+// Filters
+const searchName = ref('')
+const searchCategory = ref('')
+const sortField = ref('createTime')
+const sortOrder = ref('desc')
+
+const dialogVisible = ref(false)
+const isEdit = ref(false)
+const form = ref({
+  id: null,
+  name: '',
+  categoryId: null,
+  description: '',
+  minPrice: 0,
+  mainImage: '',
+  status: 1
+})
+
+const stockDialogVisible = ref(false)
+const skuList = ref([])
+const currentProductId = ref(null)
+
+const dialogTitle = computed(() => isEdit.value ? t('admin.edit') : t('admin.addProduct'))
+
+const fetchCategories = async () => {
+  try {
+    const res = await request.get('/backend/category/list')
+    if (res.data.code === 200) {
+      categories.value = res.data.data
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const getCategoryName = (id) => {
+  const cat = categories.value.find(c => c.id === id)
+  return cat ? cat.name : id
+}
+
+const fetchData = async () => {
   loading.value = true
   try {
-    const res = await axios.get('/api/backend/product/list')
+    const res = await request.get('/backend/product/list', {
+      params: {
+        page: currentPage.value,
+        size: pageSize.value,
+        name: searchName.value,
+        categoryId: searchCategory.value,
+        sortField: sortField.value,
+        sortOrder: sortOrder.value
+      }
+    })
     if (res.data.code === 200) {
       tableData.value = res.data.data.records
       total.value = res.data.data.total
@@ -57,25 +223,93 @@ const fetchProducts = async () => {
   }
 }
 
+const handlePageChange = (page) => {
+  currentPage.value = page
+  fetchData()
+}
+
+// Removed handleCategoryManage as it is now integrated
+
+const handleAdd = () => {
+  isEdit.value = false
+  form.value = { id: null, name: '', categoryId: null, description: '', minPrice: 0, mainImage: '', status: 1 }
+  dialogVisible.value = true
+}
+
+const handleEdit = (row) => {
+  isEdit.value = true
+  form.value = { ...row }
+  dialogVisible.value = true
+}
+
+const handleDelete = (row) => {
+  ElMessageBox.confirm(t('common.delete') + '?', t('common.warning'), {
+    confirmButtonText: t('common.submit'),
+    cancelButtonText: t('common.cancel'),
+    type: 'warning',
+  }).then(async () => {
+    try {
+      await request.delete(`/backend/product/${row.id}`)
+      ElMessage.success(t('admin.deleted'))
+      fetchData()
+    } catch (e) {
+      console.error(e)
+    }
+  })
+}
+
+const handleStatusChange = async (row) => {
+  try {
+    await request.put(`/backend/product/status/${row.id}/${row.status}`)
+    ElMessage.success(t('admin.statusUpdated'))
+  } catch (e) {
+    console.error(e)
+    row.status = row.status === 1 ? 0 : 1 // revert
+  }
+}
+
+const handleSubmit = async () => {
+  try {
+    if (isEdit.value) {
+      await request.put('/backend/product/update', form.value)
+    } else {
+      await request.post('/backend/product/add', form.value)
+    }
+    ElMessage.success(t('admin.saved'))
+    dialogVisible.value = false
+    fetchData()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const handleStock = async (row) => {
+  currentProductId.value = row.id
+  try {
+    const res = await request.get(`/backend/product/skus/${row.id}`)
+    if (res.data.code === 200) {
+      skuList.value = res.data.data
+      stockDialogVisible.value = true
+    }
+  } catch (e) {
+    console.error(e)
+    // Fallback if API fails or not implemented
+    skuList.value = []
+    stockDialogVisible.value = true
+  }
+}
+
+const saveSku = async (sku) => {
+    try {
+        await request.put('/backend/product/sku/update', sku)
+        ElMessage.success(t('admin.skuUpdated'))
+    } catch (e) {
+        console.error(e)
+    }
+}
+
 onMounted(() => {
-  fetchProducts()
+  fetchCategories()
+  fetchData()
 })
 </script>
-
-<style scoped>
-.product-manage {
-  padding: 20px;
-  border-radius: 8px;
-}
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
-</style>

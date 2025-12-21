@@ -1,5 +1,7 @@
 package com.shop.controller.admin;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.shop.entity.OrderMaster;
 import com.shop.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +18,9 @@ import java.util.List;
 @Tag(name = "后台-订单管理")
 public class AdminOrderController {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.shop.service.OrderService orderService;
+
     /**
      * 获取所有订单列表
      *
@@ -25,10 +30,13 @@ public class AdminOrderController {
      */
     @GetMapping("/list")
     @Operation(summary = "所有订单列表")
-    public Result<List<OrderMaster>> list(@RequestParam(defaultValue = "1") Integer page,
+    public Result<Page<OrderMaster>> list(@RequestParam(defaultValue = "1") Integer page,
                                           @RequestParam(defaultValue = "10") Integer size) {
-        // TODO: Implement admin list logic
-        return Result.success();
+        Page<OrderMaster> pageParam = new Page<>(page, size);
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(OrderMaster::getCreateTime);
+        Page<OrderMaster> result = orderService.page(pageParam, wrapper);
+        return Result.success(result);
     }
 
     /**
@@ -40,8 +48,10 @@ public class AdminOrderController {
     @GetMapping("/{orderNo}")
     @Operation(summary = "订单详情")
     public Result<OrderMaster> detail(@PathVariable String orderNo) {
-        // TODO: Implement detail logic
-        return Result.success();
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OrderMaster::getOrderNo, orderNo);
+        OrderMaster orderMaster = orderService.getOne(wrapper);
+        return Result.success(orderMaster);
     }
 
     /**
@@ -53,7 +63,7 @@ public class AdminOrderController {
     @PostMapping("/send/{orderNo}")
     @Operation(summary = "发货")
     public Result<String> send(@PathVariable String orderNo) {
-        // TODO: Implement send logic
+        orderService.send(orderNo);
         return Result.success("发货成功");
     }
 }

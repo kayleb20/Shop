@@ -31,10 +31,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/user/register", 
                         "/shop/user/login",
                         "/shop/user/register",
-                        "/backend/login", // Admin login
+                        "/backend/user/login", // Admin login
                         "/shop/login",    // Shop login
                         "/shop/product/**", // Public product access
                         "/shop/category/**",
+                        "/category/list", // Public category list
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
                         "/webjars/**",

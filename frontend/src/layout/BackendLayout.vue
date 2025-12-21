@@ -18,12 +18,26 @@
             <el-icon><Goods /></el-icon>
             <span>{{ $t('admin.productManage') }}</span>
           </el-menu-item>
+          <el-menu-item index="/backend/order">
+            <el-icon><List /></el-icon>
+            <span>{{ $t('admin.orderManage') }}</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
       <el-container>
         <el-header class="bg-white dark:bg-gray-800 shadow-sm flex items-center justify-end transition-colors duration-300">
+          <!-- Theme Toggle -->
+          <button 
+            @click="themeStore.toggleBackendTheme" 
+            class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mr-4"
+            :title="themeStore.backendDark ? $t('common.lightMode') : $t('common.darkMode')"
+          >
+            <el-icon v-if="themeStore.backendDark" class="text-yellow-400 text-xl"><Sunny /></el-icon>
+            <el-icon v-else class="text-gray-600 text-xl"><Moon /></el-icon>
+          </button>
+
           <el-dropdown @command="handleLanguageChange" style="margin-right: 20px;">
-            <span class="el-dropdown-link">
+            <span class="el-dropdown-link flex items-center gap-1 cursor-pointer text-gray-700 dark:text-gray-200">
               {{ currentLanguageLabel }}
               <el-icon class="el-icon--right"><arrow-down /></el-icon>
             </span>
@@ -35,7 +49,7 @@
             </template>
           </el-dropdown>
           <el-dropdown>
-            <span class="el-dropdown-link">
+            <span class="el-dropdown-link flex items-center gap-1 cursor-pointer text-gray-700 dark:text-gray-200">
               {{ $t('admin.adminUser') }} <el-icon class="el-icon--right"><arrow-down /></el-icon>
             </span>
             <template #dropdown>
@@ -54,11 +68,25 @@
 </template>
 
 <script setup>
-import { Odometer, Goods, ArrowDown } from '@element-plus/icons-vue'
+import { Odometer, Goods, ArrowDown, List, Sunny, Moon } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
-import { computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useThemeStore } from '../stores/theme'
 
+const themeStore = useThemeStore()
 const { locale, t } = useI18n()
+
+// 初始化后台主题
+onMounted(() => {
+  themeStore.updateHtmlClass(themeStore.backendDark)
+  // 强制设置后台主色调为蓝色，不使用 store 中的 primaryColor
+  themeStore.updateCssVar('#409EFF')
+})
+
+// 监听后台暗黑模式变化
+watch(() => themeStore.backendDark, (val) => {
+  themeStore.updateHtmlClass(val)
+})
 
 const currentLanguageLabel = computed(() => {
   return locale.value === 'zh' ? '中文' : 'English'

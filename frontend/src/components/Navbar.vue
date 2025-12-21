@@ -39,11 +39,11 @@
         <div class="flex items-center space-x-2 sm:space-x-4">
           <!-- 日/夜间模式切换按钮 -->
           <button
-            @click="themeStore.toggleDarkMode"
+            @click="themeStore.toggleShopTheme"
             class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 focus:outline-none transition-all duration-200 hover:scale-110"
           >
             <!-- 根据当前模式显示月亮或太阳图标 -->
-            <el-icon v-if="themeStore.isDark" :size="20" class="text-yellow-400"><Moon /></el-icon>
+            <el-icon v-if="themeStore.shopDark" :size="20" class="text-yellow-400"><Moon /></el-icon>
             <el-icon v-else :size="20" class="text-orange-500"><Sunny /></el-icon>
           </button>
 
@@ -82,17 +82,6 @@
                   </div>
                 </div>
                 
-                <!-- 货币展示区域 -->
-                <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                  <div class="flex items-center justify-between">
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ $t('setting.currency') }}</p>
-                    <span class="text-xs text-[var(--el-color-primary)] cursor-pointer hover:underline" @click="openSettings">{{ $t('setting.change') }}</span>
-                  </div>
-                  <div class="mt-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg text-center">
-                    {{ localeStore.currency }}
-                  </div>
-                </div>
-
                 <!-- 更多设置链接 -->
                 <div class="px-4 py-2 bg-gray-50 dark:bg-gray-700/30 rounded-b-xl">
                   <a

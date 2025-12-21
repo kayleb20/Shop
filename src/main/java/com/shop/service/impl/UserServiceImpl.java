@@ -81,19 +81,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Result<String> update(User user) {
+        boolean success = this.updateById(user);
+        return success ? Result.success("更新成功") : Result.error("更新失败");
+    }
+
+    @Override
+    public long countUsersByDateRange(java.time.LocalDateTime start, java.time.LocalDateTime end) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, user.getUsername());
-        User dbUser = this.getOne(wrapper);
-        if (dbUser == null) {
-            return Result.error("用户不存在");
-        }
-        
-        // Update fields
-        if (user.getEmail() != null) dbUser.setEmail(user.getEmail());
-        if (user.getPhone() != null) dbUser.setPhone(user.getPhone());
-        if (user.getAddress() != null) dbUser.setAddress(user.getAddress());
-        
-        this.updateById(dbUser);
-        return Result.success("更新成功");
+        wrapper.ge(User::getCreateTime, start)
+               .lt(User::getCreateTime, end);
+        return this.count(wrapper);
+    }
+
+    @Override
+    public java.util.List<User> findRecentUsers(int limit) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(User::getCreateTime)
+               .last("LIMIT " + limit);
+        return this.list(wrapper);
     }
 }

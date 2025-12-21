@@ -26,7 +26,7 @@
       <div class="w-3/4 pl-6 overflow-y-auto">
         <!-- 语言和区域设置面板 -->
         <div v-if="currentTab === 'language'">
-          <h3 class="text-xl font-bold mb-6 text-gray-800 dark:text-white">{{ $t('settingsModal.languageAndCurrency') }}</h3>
+          <h3 class="text-xl font-bold mb-6 text-gray-800 dark:text-white">{{ $t('settingsModal.language') }}</h3>
           
           <!-- 语言选择 -->
           <div class="mb-8">
@@ -45,19 +45,6 @@
                 </label>
               </div>
             </div>
-          </div>
-
-          <!-- 货币选择 -->
-          <div class="mb-8">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ $t('settingsModal.currency') }}</label>
-            <select
-              v-model="tempCurrency"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option value="USD">USD - US Dollar ($)</option>
-              <option value="CNY">CNY - Chinese Yuan (¥)</option>
-              <option value="EUR">EUR - Euro (€)</option>
-            </select>
           </div>
         </div>
 
@@ -99,7 +86,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ $t('settingsModal.thememode') }}</label>
             <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
               <span class="text-gray-900 dark:text-white">{{ $t('settingsModal.darkmode') }}</span>
-              <el-switch v-model="themeStore.isDark" />
+              <el-switch v-model="themeStore.shopDark" @change="themeStore.toggleShopTheme" />
             </div>
           </div>
 
@@ -211,11 +198,10 @@ const currentTab = ref('language')
 
 // 临时存储用户选择的语言和货币，点击保存时才生效
 const tempLocale = ref(localeStore.currentLocale)
-const tempCurrency = ref(localeStore.currency)
 
 // 设置选项卡配置
 const tabs = computed(() => [
-  { id: 'language', label: t('settingsModal.languageAndCurrency') },
+  { id: 'language', label: t('settingsModal.language') },
   { id: 'appearance', label: t('settingsModal.appearance') },
   { id: 'address', label: t('settingsModal.address') },
   { id: 'account', label: t('settingsModal.account') }
@@ -236,10 +222,8 @@ watch(() => props.modelValue, (val) => {
   visible.value = val
   if (val) {
     tempLocale.value = localeStore.currentLocale
-    tempCurrency.value = localeStore.currency
   }
 })
-
 // 关闭对话框的处理函数
 const handleClose = () => {
   visible.value = false
@@ -250,7 +234,6 @@ const handleClose = () => {
 // 将临时变量的值应用到 store 中，并关闭对话框
 const saveSettings = () => {
   localeStore.setLocale(tempLocale.value)
-  localeStore.setCurrency(tempCurrency.value)
   handleClose()
 }
 

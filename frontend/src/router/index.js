@@ -87,6 +87,17 @@ const routes = [
         path: 'product',
         component: () => import('../views/backend/ProductManage.vue'),
         meta: { requiresAuth: true, role: 'ADMIN' }
+      },
+      {
+        // 订单管理：/backend/order
+        path: 'order',
+        component: () => import('../views/backend/OrderManage.vue'),
+        meta: { requiresAuth: true, role: 'ADMIN' }
+      },
+      {
+        path: 'category',
+        component: () => import('../views/backend/CategoryManage.vue'),
+        meta: { requiresAuth: true, role: 'ADMIN' }
       }
     ]
   }

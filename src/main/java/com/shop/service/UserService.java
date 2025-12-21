@@ -10,4 +10,6 @@ public interface UserService extends IService<User> {
     Result<String> login(UserLoginDTO loginDTO);
     Result<String> register(UserRegisterDTO registerDTO);
     Result<String> update(User user);
+    long countUsersByDateRange(java.time.LocalDateTime start, java.time.LocalDateTime end);
+    java.util.List<User> findRecentUsers(int limit);
 }

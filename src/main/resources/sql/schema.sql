@@ -4,6 +4,20 @@ CREATE DATABASE IF NOT EXISTS `shop_db` DEFAULT CHARACTER SET utf8mb4 COLLATE ut
 
 USE `shop_db`;
 
+-- 0. 管理员表
+CREATE TABLE IF NOT EXISTS `admin_user` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `username` VARCHAR(50) NOT NULL COMMENT '用户名',
+    `password` VARCHAR(100) NOT NULL COMMENT '密码',
+    `email` VARCHAR(100) DEFAULT NULL COMMENT '邮箱',
+    `phone` VARCHAR(20) DEFAULT NULL COMMENT '手机号',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT(1) DEFAULT 0 COMMENT '逻辑删除 0-未删除 1-已删除',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理员表';
+
 -- 1. 用户表
 CREATE TABLE IF NOT EXISTS `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -121,17 +135,17 @@ CREATE TABLE IF NOT EXISTS `order_detail` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单明细表';
 
 -- 8. 管理员表
-CREATE TABLE IF NOT EXISTS `admin_user` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `username` VARCHAR(50) NOT NULL COMMENT '用户名',
-    `password` VARCHAR(100) NOT NULL COMMENT '密码',
-    `role` VARCHAR(20) DEFAULT 'ADMIN' COMMENT '角色',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted` TINYINT(1) DEFAULT 0 COMMENT '逻辑删除',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理员表';
+# CREATE TABLE IF NOT EXISTS `admin_user` (
+#     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+#     `username` VARCHAR(50) NOT NULL COMMENT '用户名',
+#     `password` VARCHAR(100) NOT NULL COMMENT '密码',
+#     `role` VARCHAR(20) DEFAULT 'ADMIN' COMMENT '角色',
+#     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+#     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+#     `deleted` TINYINT(1) DEFAULT 0 COMMENT '逻辑删除',
+#     PRIMARY KEY (`id`),
+#     UNIQUE KEY `uk_username` (`username`)
+# ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理员表';
 
 -- 9. 销售统计表
 CREATE TABLE IF NOT EXISTS `sales_report` (

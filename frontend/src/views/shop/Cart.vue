@@ -34,13 +34,13 @@
         <el-form-item :label="$t('shop.receiverInfo')">
           <div v-if="addressList.length > 0" class="w-full">
             <el-radio-group v-model="selectedAddressId" class="flex flex-col items-start w-full" @change="handleAddressSelect">
-              <el-radio v-for="addr in addressList" :key="addr.id" :label="addr.id" class="!ml-0 w-full border p-3 rounded h-auto !items-start mb-2 !h-auto">
+              <el-radio v-for="addr in addressList" :key="addr.id" :label="addr.id" class="!ml-0 w-full border p-3 rounded !h-auto !items-start mb-2 address-radio">
                 <div class="flex flex-col text-left whitespace-normal leading-normal ml-2">
                   <span class="font-bold text-base">{{ addr.name }} <span class="ml-2 text-gray-500 text-sm">{{ addr.phone }}</span></span>
                   <span class="text-gray-500 text-sm mt-1 break-all">{{ addr.address }}</span>
                 </div>
               </el-radio>
-              <el-radio :label="-1" class="!ml-0 w-full border p-3 rounded !h-auto !items-start mb-2">
+              <el-radio :label="-1" class="!ml-0 w-full border p-3 rounded !h-auto !items-start mb-2 address-radio">
                 <div class="flex flex-col text-left whitespace-normal leading-normal ml-2">
                   <span class="font-bold text-base">
                     {{ $t('common.add') }} / {{ $t('shop.address') }}
@@ -227,3 +227,21 @@ onMounted(() => {
   fetchCart()
 })
 </script>
+
+<style scoped>
+:deep(.address-radio) {
+  display: flex !important;
+  align-items: flex-start !important;
+  height: auto !important;
+}
+
+:deep(.address-radio .el-radio__input) {
+  margin-top: 3px !important; /* Fine-tuned for visual alignment */
+}
+
+:deep(.address-radio .el-radio__label) {
+  width: 100%;
+  white-space: normal;
+  line-height: 1.5;
+}
+</style>

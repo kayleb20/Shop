@@ -8,9 +8,25 @@ TRUNCATE TABLE `product`;
 TRUNCATE TABLE `product_sku`;
 TRUNCATE TABLE `product_category`;
 TRUNCATE TABLE `user`;
+TRUNCATE TABLE `admin_user`;
 TRUNCATE TABLE `order_master`;
 TRUNCATE TABLE `order_detail`;
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- 1.1 插入管理员 (密码: 123456)
+INSERT INTO `admin_user` (id, username, password) VALUES 
+(1, 'admin', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGqq0jd2zm6adLI.ungxuRnFoldDOu');
+
+-- 1.2 插入测试用户 (密码: 123456)
+INSERT INTO `user` (id, username, password, email, phone) VALUES
+(1, 'testuser', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGqq0jd2zm6adLI.ungxuRnFoldDOu', 'test@example.com', '13800138000'),
+(2, 'alice', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGqq0jd2zm6adLI.ungxuRnFoldDOu', 'alice@example.com', '13900139000');
+
+-- 1.3 插入测试订单
+INSERT INTO `order_master` (id, order_no, user_id, total_amount, status, create_time) VALUES
+(1, '202312220001', 1, 7999.00, 1, NOW()),
+(2, '202312220002', 1, 299.00, 0, NOW()),
+(3, '202312220003', 2, 14999.00, 2, NOW());
 
 -- 2. 插入分类
 INSERT INTO `product_category` (id, name, sort) VALUES 

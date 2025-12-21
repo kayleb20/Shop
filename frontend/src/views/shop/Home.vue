@@ -54,8 +54,12 @@
             effect="dark"
           >
             <el-option :label="$t('shop.all')" value="" />
-            <el-option :label="$t('shop.electronics')" value="1" />
-            <el-option :label="$t('shop.clothing')" value="2" />
+            <el-option 
+              v-for="cat in categories" 
+              :key="cat.id" 
+              :label="cat.name" 
+              :value="cat.id" 
+            />
           </el-select>
         </div>
 
@@ -82,6 +86,7 @@
         <span 
           class="text-sm text-gray-500 dark:text-gray-400 cursor-pointer transition-colors"
           :style="{ color: themeColor }"
+          @click="loadMore"
         >
           {{ $t('shop.more') }} &rarr;
         </span>
@@ -140,9 +145,6 @@
               <p class="text-xl font-bold text-gray-900 dark:text-white">
                 ¥{{ product.minPrice }} {{ $t('shop.startingFrom') }}
               </p>
-              <div class="flex text-yellow-400 text-sm">
-                ★★★★☆ <span class="text-gray-400 ml-1">(4.5)</span>
-              </div>
             </div>
           </div>
         </div>
@@ -150,7 +152,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { Search, Shop } from '@element-plus/icons-vue'
@@ -165,6 +166,9 @@ const products = ref([])
 const loading = ref(false)
 const searchKeyword = ref('')
 const selectedCategory = ref('')
+const categories = ref([])
+const currentPage = ref(1)
+const pageSize = ref(8)
 
 // 动态主题主色：直接读取 Pinia 中的 primaryColor
 const themeColor = computed(() => themeStore.primaryColor)
@@ -195,22 +199,47 @@ const bannerStyle = computed(() => {
 })
 
 // 异步获取商品列表：带 loading 状态与关键字/分类查询
-const fetchProducts = async () => {
+const fetchProducts = async (append = false) => {
+  if (!append) {
+    currentPage.value = 1
+  }
   loading.value = true
   try {
     const res = await axios.get('/api/shop/product/list', {
       params: {
         keyword: searchKeyword.value,
-        categoryId: selectedCategory.value
+        categoryId: selectedCategory.value,
+        page: currentPage.value,
+        size: pageSize.value
       }
     })
     if (res.data.code === 200) {
-      products.value = res.data.data.records
+      if (append) {
+        products.value.push(...res.data.data.records)
+      } else {
+        products.value = res.data.data.records
+      }
     }
   } catch (e) {
     console.error(e)
   } finally {
     loading.value = false
+  }
+}
+
+const loadMore = () => {
+  currentPage.value++
+  fetchProducts(true)
+}
+
+const fetchCategories = async () => {
+  try {
+    const res = await axios.get('/api/category/list')
+    if (res.data.code === 200) {
+      categories.value = res.data.data
+    }
+  } catch (e) {
+    console.error(e)
   }
 }
 
@@ -245,8 +274,8 @@ const addToCart = async (product) => {
   }
 }
 
-// 首次挂载时自动拉取列表
 onMounted(() => {
+  fetchCategories()
   fetchProducts()
 })
 </script>

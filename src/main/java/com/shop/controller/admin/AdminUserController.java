@@ -3,6 +3,7 @@ package com.shop.controller.admin;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.shop.dto.UserLoginDTO;
 import com.shop.entity.User;
+import com.shop.service.AdminUserService;
 import com.shop.service.UserService;
 import com.shop.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,9 @@ public class AdminUserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AdminUserService adminUserService;
+
     /**
      * 管理员登录
      *
@@ -30,8 +34,7 @@ public class AdminUserController {
     @PostMapping("/login")
     @Operation(summary = "管理员登录")
     public Result<String> login(@RequestBody UserLoginDTO loginDTO) {
-        // In a real app, you might check if the user has 'ADMIN' role here
-        return userService.login(loginDTO);
+        return adminUserService.login(loginDTO);
     }
 
     /**

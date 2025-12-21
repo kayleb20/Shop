@@ -1,18 +1,36 @@
 <template>
-  <div class="admin-login-container">
-    <div class="login-card">
-      <div class="header">
-        <h1>{{ $t('admin.title') }}</h1>
-        <p>{{ $t('admin.secureAccess') }}</p>
+  <div class="admin-login-container min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div class="login-card w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
+      <div class="header text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ $t('admin.title') }}</h1>
+        <p class="text-gray-500 dark:text-gray-400">{{ $t('admin.secureAccess') }}</p>
       </div>
-      <el-form :model="form" size="large">
+      <el-form :model="form" size="large" class="space-y-6">
         <el-form-item>
-          <el-input v-model="form.username" :placeholder="$t('common.username')" prefix-icon="User" />
+          <el-input 
+            v-model="form.username" 
+            :placeholder="$t('common.username')" 
+            prefix-icon="User" 
+            class="!rounded-lg"
+          />
         </el-form-item>
         <el-form-item>
-          <el-input v-model="form.password" type="password" :placeholder="$t('common.password')" prefix-icon="Lock" show-password />
+          <el-input 
+            v-model="form.password" 
+            type="password" 
+            :placeholder="$t('common.password')" 
+            prefix-icon="Lock" 
+            show-password 
+            class="!rounded-lg"
+            @keyup.enter="login"
+          />
         </el-form-item>
-        <el-button type="primary" class="submit-btn" @click="login" :loading="loading">
+        <el-button 
+          type="primary" 
+          class="w-full !h-12 !text-lg !rounded-lg !font-semibold shadow-md hover:shadow-lg transition-all duration-200" 
+          @click="login" 
+          :loading="loading"
+        >
           {{ $t('common.login') }}
         </el-button>
       </el-form>
@@ -22,10 +40,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { User, Lock } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
+const { t } = useI18n()
 const router = useRouter()
 const loading = ref(false)
 const form = ref({
@@ -34,18 +55,23 @@ const form = ref({
 })
 
 const login = async () => {
+  if (!form.value.username || !form.value.password) {
+    ElMessage.warning(t('common.fillAllFields'))
+    return
+  }
   loading.value = true
   try {
-    // In real scenario, use a dedicated admin login endpoint
-    const res = await axios.post('/api/user/login', form.value)
+    const res = await axios.post('/api/backend/user/login', form.value)
     if (res.data.code === 200) {
       localStorage.setItem('token', res.data.data)
+      ElMessage.success(t('common.loginSuccess'))
       router.push('/backend/dashboard')
     } else {
-      alert(res.data.message)
+      ElMessage.error(res.data.message || t('common.loginFailed'))
     }
   } catch (e) {
     console.error(e)
+    ElMessage.error(t('common.networkError'))
   } finally {
     loading.value = false
   }
@@ -53,38 +79,5 @@ const login = async () => {
 </script>
 
 <style scoped>
-.admin-login-container {
-  height: 100vh;
-  background: #2d3a4b;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.login-card {
-  width: 400px;
-  padding: 50px;
-  background: white;
-  border-radius: 4px;
-}
-.header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-.header h1 {
-  margin: 0;
-  color: #2d3a4b;
-}
-.header p {
-  color: #909399;
-  margin-top: 10px;
-}
-.submit-btn {
-  width: 100%;
-  background-color: #2d3a4b;
-  border-color: #2d3a4b;
-}
-.submit-btn:hover {
-  background-color: #1f2d3d;
-  border-color: #1f2d3d;
-}
+/* Scoped styles can be removed if using Tailwind fully, but keeping for specific overrides if needed */
 </style>

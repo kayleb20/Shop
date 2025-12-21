@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class OrderServiceImpl implements OrderService {
+public class OrderServiceImpl extends com.baomidou.mybatisplus.extension.service.impl.ServiceImpl<OrderMasterMapper, OrderMaster> implements OrderService {
 
     @Autowired
     private CartService cartService;
@@ -46,6 +46,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderDetailMapper orderDetailMapper;
+
+    @Autowired
+    private com.shop.service.EmailService emailService;
 
     @Autowired
     private UserMapper userMapper;
@@ -171,6 +174,34 @@ public class OrderServiceImpl implements OrderService {
             orderMaster.setStatus(1); // Paid
             orderMaster.setPaymentTime(LocalDateTime.now());
             orderMasterMapper.updateById(orderMaster);
+
+            // Send email
+            User user = userMapper.selectById(orderMaster.getUserId());
+            if (user != null && user.getEmail() != null) {
+                String subject = "订单支付成功通知 - " + orderNo;
+                String content = String.format(
+                    "尊敬的用户 %s，您好：\n\n" +
+                    "您的订单已支付成功！\n" +
+                    "--------------------------------\n" +
+                    "订单编号：%s\n" +
+                    "支付金额：￥%s\n" +
+                    "支付时间：%s\n" +
+                    "收货人：%s\n" +
+                    "收货地址：%s\n" +
+                    "联系电话：%s\n" +
+                    "--------------------------------\n" +
+                    "我们会尽快为您安排发货，请耐心等待。\n" +
+                    "感谢您的光临！",
+                    user.getUsername(),
+                    orderNo,
+                    orderMaster.getTotalAmount(),
+                    orderMaster.getPaymentTime(),
+                    orderMaster.getReceiverName(),
+                    orderMaster.getReceiverAddress(),
+                    orderMaster.getReceiverPhone()
+                );
+                emailService.sendSimpleMessage(user.getEmail(), subject, content);
+            }
         }
     }
 
@@ -184,7 +215,111 @@ public class OrderServiceImpl implements OrderService {
             orderMaster.setStatus(2); // Shipped
             orderMaster.setDeliveryTime(LocalDateTime.now());
             orderMasterMapper.updateById(orderMaster);
+
+            // Send email
+            User user = userMapper.selectById(orderMaster.getUserId());
+            if (user != null && user.getEmail() != null) {
+                String subject = "订单发货通知 - " + orderNo;
+                String content = String.format(
+                    "尊敬的用户 %s，您好：\n\n" +
+                    "您的订单已经发货啦！\n" +
+                    "--------------------------------\n" +
+                    "订单编号：%s\n" +
+                    "发货时间：%s\n" +
+                    "收货人：%s\n" +
+                    "收货地址：%s\n" +
+                    "联系电话：%s\n" +
+                    "--------------------------------\n" +
+                    "请保持电话畅通，以便快递员联系您。\n" +
+                    "收到商品后，如有任何问题请及时联系我们。\n" +
+                    "祝您生活愉快！",
+                    user.getUsername(),
+                    orderNo,
+                    orderMaster.getDeliveryTime(),
+                    orderMaster.getReceiverName(),
+                    orderMaster.getReceiverAddress(),
+                    orderMaster.getReceiverPhone()
+                );
+                emailService.sendSimpleMessage(user.getEmail(), subject, content);
+            }
         }
+    }
+
+    @Override
+    public BigDecimal getTotalSales() {
+        // Sum total_amount where status >= 1 (Paid)
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ge(OrderMaster::getStatus, 1);
+        List<OrderMaster> orders = orderMasterMapper.selectList(wrapper);
+        return orders.stream()
+                .map(OrderMaster::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public long countPendingOrders() {
+        // Count where status = 0 (Unpaid) or 1 (Paid, not shipped)
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(OrderMaster::getStatus, 0, 1);
+        return orderMasterMapper.selectCount(wrapper);
+    }
+
+    @Override
+    public BigDecimal getSalesByDateRange(LocalDateTime start, LocalDateTime end) {
+        List<Integer> statuses = List.of(1, 2, 3);
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(OrderMaster::getStatus, statuses)
+               .ge(OrderMaster::getCreateTime, start)
+               .lt(OrderMaster::getCreateTime, end);
+        List<OrderMaster> orders = this.list(wrapper);
+        return orders.stream()
+                .map(OrderMaster::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public long countOrdersByDateRange(LocalDateTime start, LocalDateTime end) {
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ge(OrderMaster::getCreateTime, start)
+               .lt(OrderMaster::getCreateTime, end);
+        return this.count(wrapper);
+    }
+
+    @Override
+    public long countPendingOrdersByDateRange(LocalDateTime start, LocalDateTime end) {
+        // Status: 0-Unpaid, 1-Paid (Pending Shipment)
+        List<Integer> statuses = List.of(0, 1);
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(OrderMaster::getStatus, statuses)
+               .ge(OrderMaster::getCreateTime, start)
+               .lt(OrderMaster::getCreateTime, end);
+        return this.count(wrapper);
+    }
+
+    @Override
+    public List<OrderMaster> findRecentOrders(int limit) {
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(OrderMaster::getCreateTime)
+               .last("LIMIT " + limit);
+        return this.list(wrapper);
+    }
+
+    @Override
+    public java.util.Map<String, BigDecimal> getDailySales(LocalDateTime start, LocalDateTime end) {
+        List<Integer> statuses = List.of(1, 2, 3); // Paid, Shipped, Completed
+        LambdaQueryWrapper<OrderMaster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(OrderMaster::getStatus, statuses)
+               .ge(OrderMaster::getCreateTime, start)
+               .lt(OrderMaster::getCreateTime, end);
+        List<OrderMaster> orders = this.list(wrapper);
+        
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        
+        return orders.stream()
+                .collect(Collectors.groupingBy(
+                        order -> order.getCreateTime().format(formatter),
+                        Collectors.reducing(BigDecimal.ZERO, OrderMaster::getTotalAmount, BigDecimal::add)
+                ));
     }
 
     private OrderVO convertToVO(OrderMaster orderMaster) {

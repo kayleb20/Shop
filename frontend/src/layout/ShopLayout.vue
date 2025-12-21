@@ -23,10 +23,27 @@
 import Navbar from '../components/Navbar.vue'
 // 引入主题状态管理 Store
 import { useThemeStore } from '../stores/theme'
+import { onMounted, watch } from 'vue'
 
 // 初始化主题 Store
-// 布局组件需要监听 themeStore.isDark 的变化，以便动态调整最外层容器的背景色
 const themeStore = useThemeStore()
+
+// 初始化前台主题
+onMounted(() => {
+  themeStore.updateHtmlClass(themeStore.shopDark)
+  // 恢复用户设置的主题色
+  themeStore.updateCssVar(themeStore.primaryColor)
+})
+
+// 监听前台暗黑模式变化
+watch(() => themeStore.shopDark, (val) => {
+  themeStore.updateHtmlClass(val)
+})
+
+// 监听主题色变化（仅在前台生效）
+watch(() => themeStore.primaryColor, (val) => {
+  themeStore.updateCssVar(val)
+})
 </script>
 
 <style scoped>
